@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<title>Team 15</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<script type="text/javascript" src="lib/d3.v5.min.js"></script>
+<script type="text/javascript" src="lib/d3-dsv.min.js"></script>
+<script type="text/javascript" src="lib/d3-tip.min.js"></script>
+<script type="text/javascript" src="lib/d3-geo-projection.v2.min.js"></script>
+<script type="text/javascript" src="lib/topojson.v2.min.js"></script>
+<script type="text/javascript" src="lib/d3-legend.min.js"></script>
+<style>
+body {font-family: "Lato", sans-serif;}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Lato";
+  letter-spacing: 5px;
+}
+</style>
+
+<body>
+
+<!-- Navbar (sit on top) -->
+<div class="w3-top">
+  <div class="w3-bar w3-white w3-padding w3-card" style="letter-spacing:4px;">
+    <a href="#home" class="w3-bar-item w3-button">2020fall-cse6242-project-team15</a>
+    <!-- Right-sided navbar links. Hide them on small screens -->
+    <div class="w3-right w3-hide-small">
+      <a href="#about" class="w3-bar-item w3-button">About</a>
+      <a href="#project" class="w3-bar-item w3-button">Project</a>
+      <a href="#contact" class="w3-bar-item w3-button">Contact</a>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="w3-display-container w3-content w3-wide" style="max-width:1600px;min-width:500px" id="home">
+  <img class="w3-image" src="images/mordern_house.jpg" alt="mordern_house" width="1600" height="800">
+  <div class="w3-display-middle">
+    <h1 class="w3-xxxlarge" style="color:white">California or Texas?</h1>
+    <h1 class="w3-xxlarge" style="color:white">A deep dive into United States housing market under a pandemic in 2020</h1>
+  </div>
+</header>
+
+<!-- Page content -->
+<div class="w3-content" style="max-width:1400px">
+
+  <!-- About Section -->
+  <div class="w3-row w3-padding-64" id="about">
+    <div class="w3-col l6 w3-padding-large">
+      <h1 class="w3-center">About Our Project</h1>
+      <p class="w3-large">We want to build models using big data to have deep understanding about the housing markets of two States: California and Taxes, to gain insights about the impactof diverse factors over the housing price, and how the model will change under the scenario of the 2020 pandemic.</p>
+      <p class="w3-large">Instruction:</p>
+    </div>
+    <div class="w3-col l6 w3-padding-large" id="US">
+      <h1 class="w3-center">United States</h1><br>
+          <h4></h4>
+            <p class="w3-text-grey"></p><br>
+  <script type="text/javascript">
+    //Width and height of map
+    var w = 700;
+    var h = 300;
+    // D3 Projection
+    var projection1 = d3.geoMercator()
+                   .center([ -96, 38 ])
+                   .translate([ w/2, h/2 ])
+                   .scale([ w*0.9 ]);
+    // Define path generator
+    var path1 = d3.geoPath().projection(projection1); 
+    //Create SVG element and append map to the SVG
+    var svg1 = d3.select("#US")
+          .append("svg")
+          .attr("id","svg1")
+          .attr("width", w)
+          .attr("height", h)
+          .append('g');        
+    // Append Div for tooltip to SVG
+    var div = d3.select("#US")
+            .append("div")   
+            .attr("class", "tooltip")               
+            .style("opacity", 0);
+    
+    Promise.all([
+      // enter code to read files
+      d3.json("data/us-states.json")//,
+      //d3.dsv(",", ".csv")       
+    ]).then(
+      // enter code to call ready() with required arguments
+      d => ready1(d[0], d[1])
+    ).catch(function(error){e = error});
+
+    function ready1(US, Data) {
+
+      console.log(US.features);
+      // Bind the data to the SVG and create one path per GeoJSON feature
+      var map1 = svg1.selectAll('.p1')
+              .data(US.features)
+              .enter()
+              .append("path")
+              .attr("id","p1")
+              .attr("d", path1)
+              .style("stroke", "#fff")
+              .style("stroke-width", "1")
+              .style("fill", function(d) {
+                var value = d.id;
+                if (value == "TX") {
+                  return "#C21807";
+                } else if (value == "CA") {
+                  return "#0F52BA";
+                } else { return "#ccc"; }
+              });
+    };
+  </script>
+    </div>
+  </div>
+  
+  <hr>
+  
+  <!-- Project Section -->
+  <div class="w3-row w3-padding-64" id="project">
+    <div class="w3-col l6 w3-padding-large">
+      <h1 class="w3-center">California</h1><br>
+      <h4></h4>
+      <p class="w3-text-grey"></p><br>
+      <div id="cal">
+        <div id="tooltip" class="hidden"></div>
+      </div>
+    <script type="text/javascript">
+      //Width and height
+      var w = 700;
+      var h = 600;
+
+      //Define map projection
+      var projection2 = d3.geoMercator()
+                   .center([ -119, 37 ])
+                   .translate([ w/2, h/2 ])
+                   .scale([ w*4.5 ]);
+
+      //Define path generator
+      var path2 = d3.geoPath().projection(projection2);
+
+      //Create SVG
+      var svg2 = d3.select("#cal")            
+            .append("svg")
+            .attr("id","svg2")  
+            .attr("width", w)
+            .attr("height", h)
+            .append('g');
+
+      Promise.all([
+        // enter code to read files
+        d3.json("data/cb_2014_us_county_5m.json")//,
+        //d3.dsv(",", ".csv")       
+      ]).then(
+        // enter code to call ready() with required arguments
+        d => ready2(d[0], d[1])
+      ).catch(function(error){e = error});
+
+      function ready2(CA, Data) {
+
+        console.log(CA.features);
+        // Bind the data to the SVG and create one path per GeoJSON feature
+        var map2 = svg2.selectAll('.p2')
+                .data(CA.features)
+                .enter()
+                .append("path")
+                .attr("id","p2")
+                .attr("d", path2)
+                .style("stroke", "#fff")
+                .style("stroke-width", "1")
+                .style("fill", "#ccc");
+      };
+    </script>
+    </div>
+    
+    <div class="w3-col l6 w3-padding-large">
+      <h1 class="w3-center">Taxes</h1><br>
+      <h4></h4>
+      <p class="w3-text-grey"></p><br>
+      <div id="tex">
+        <div id="tooltip" class="hidden"></div>
+      </div>
+    <script type="text/javascript">
+      //Width and height
+      var w = 700;
+      var h = 600;
+
+      //Define map projection
+      var projection3 = d3.geoMercator()
+                   .center([ -100, 31 ])
+                   .translate([ w/2, h/2 ])
+                   .scale([ w*4.3 ]);
+
+      //Define path generator
+      var path3 = d3.geoPath().projection(projection3);
+
+      //Create SVG
+      var svg3 = d3.select("#tex")            
+            .append("svg")
+            .attr("id","svg3")  
+            .attr("width", w)
+            .attr("height", h)
+            .append('g');
+
+      Promise.all([
+        // enter code to read files
+        d3.json("data/tx_counties.json")//,
+        //d3.dsv(",", ".csv")       
+      ]).then(
+        // enter code to call ready() with required arguments
+        d => ready3(d[0], d[1])
+      ).catch(function(error){e = error});
+
+      function ready3(TX, Data) {
+
+        console.log(TX.features);
+        // Bind the data to the SVG and create one path per GeoJSON feature
+        var map3 = svg3.selectAll('.p3')
+                .data(TX.features)
+                .enter()
+                .append("path")
+                .attr("id","p3")
+                .attr("d", path3)
+                .style("stroke", "#fff")
+                .style("stroke-width", "1")
+                .style("fill", "#ccc");
+      };
+    </script>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Contact Section -->
+  <div class="w3-container w3-padding-64" id="contact">
+    <h1>Contact</h1><br>
+    
+    <div class="w3-col l3 m6 w3-margin-bottom">
+      <h3>Zhenqian Wang</h3>
+      <p class="w3-opacity">zwang930</p>
+      <p class="w3-opacity">Project Team Member</p>
+    </div>
+    <div class="w3-col l3 m6 w3-margin-bottom">
+      <h3>Shuyi Wang</h3>
+      <p class="w3-opacity">swang705</p>
+      <p class="w3-opacity">Project Team Member</p>
+    </div>
+    <div class="w3-col l3 m6 w3-margin-bottom">
+      <h3>Yao Dai</h3>
+      <p class="w3-opacity">ydai63</p>
+      <p class="w3-opacity">Project Team Member</p>
+    </div>
+    <div class="w3-col l3 m6 w3-margin-bottom">
+      <h3>Yi Chun Yeh</h3>
+      <p class="w3-opacity">yyeh43</p>
+      <p class="w3-opacity">Project Team Member</p>
+    </div>
+    <div class="w3-col l3 m6 w3-margin-bottom">
+      <h3>Chen Deng</h3>
+      <p class="w3-opacity">cdeng49</p>
+      <p class="w3-opacity">Project Team Member</p>
+    </div>
+    <div class="w3-col l3 m6 w3-margin-bottom">
+      <h3>Lok Yi Lam</h3>
+      <p class="w3-opacity">llam34</p>
+      <p class="w3-opacity">Project Team Member</p>
+    </div>    
+  </div>
+  
+<!-- End page content -->
+</div>
+
+<!-- Footer -->
+<footer class="w3-center w3-light-grey w3-padding-32">
+  <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" title="W3.CSS" target="_blank" class="w3-hover-text-green">w3.css</a></p>
+</footer>
+
+</body>
+</html>
